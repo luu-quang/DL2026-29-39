@@ -36,14 +36,13 @@ def scan_video_files(dataset_root: Path):
     videos_by_stem = {}
 
     # TEAM entries are matched by filename stem, not assumed to be valid local paths.
-    for path in Path(dataset_root).rglob("*"):
+    for path in sorted(Path(dataset_root).rglob("*")):
         if not path.is_file() or path.suffix.lower() != ".avi":
             continue
 
         stem_key = path.stem.lower()
-        if stem_key in videos_by_stem:
-            raise ValueError(f"Duplicate video filename stem: '{path.stem}'.")
-        videos_by_stem[stem_key] = path
+        if stem_key not in videos_by_stem:
+            videos_by_stem[stem_key] = path
 
     if not videos_by_stem:
         raise ValueError(f"No .avi videos found under {dataset_root}.")
@@ -61,8 +60,8 @@ def parse_group_id(video_stem: str):
     return int(match.group(1))
 
 
-def load_team_split(split_file: Path, videos_by_stem, class_to_idx):
-    """Match one TEAM split file to real UCF101 videos by filename stem."""
+def load_team_split(split_file: Path, videos_by_stem, class_to_idx, missing=None):
+    """Match one TEAM split file to available UCF101 videos by filename stem."""
     records = []
 
     with open(split_file, "r", encoding="utf-8") as file:
@@ -75,10 +74,12 @@ def load_team_split(split_file: Path, videos_by_stem, class_to_idx):
             stem_key = Path(team_entry).stem.lower()
 
             if stem_key not in videos_by_stem:
-                raise FileNotFoundError(
-                    f"Line {line_number} of {Path(split_file).name} has no matching video: "
-                    f"'{stem_key}'."
-                )
+                if missing is None:
+                    raise FileNotFoundError(
+                        f"Line {line_number} of {Path(split_file).name} has no matching video: '{stem_key}'."
+                    )
+                missing.append(team_entry)
+                continue
 
             video_path = videos_by_stem[stem_key]
             video_id = video_path.stem
@@ -141,22 +142,33 @@ def check_team_split_disjointness(train_records, val_records, test_records):
     return True
 
 
+LAST_MISSING = {"train": [], "val": [], "test": []}
+
+
 def load_team_splits(split_dir: Path, dataset_root: Path, class_to_idx):
-    """Load TEAM train/val/test splits and verify disjointness."""
+    """Load available TEAM train/val/test videos and verify split disjointness."""
     split_dir = Path(split_dir)
     videos_by_stem = scan_video_files(dataset_root)
 
+    missing = {"train": [], "val": [], "test": []}
     train_records = load_team_split(
-        split_dir / "trainlist.txt", videos_by_stem, class_to_idx
+        split_dir / "trainlist.txt", videos_by_stem, class_to_idx, missing["train"]
     )
     val_records = load_team_split(
-        split_dir / "vallist.txt", videos_by_stem, class_to_idx
+        split_dir / "vallist.txt", videos_by_stem, class_to_idx, missing["val"]
     )
     test_records = load_team_split(
-        split_dir / "testlist.txt", videos_by_stem, class_to_idx
+        split_dir / "testlist.txt", videos_by_stem, class_to_idx, missing["test"]
     )
 
     check_team_split_disjointness(train_records, val_records, test_records)
+    LAST_MISSING.clear()
+    LAST_MISSING.update(missing)
+    total_missing = sum(len(items) for items in missing.values())
+    print(
+        f"[dataset] matched train={len(train_records)}, val={len(val_records)}, test={len(test_records)}; "
+        f"missing TEAM entries={total_missing}"
+    )
     return train_records, val_records, test_records
 
 
