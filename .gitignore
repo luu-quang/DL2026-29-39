@@ -1,23 +1,16 @@
-# Python
 __pycache__/
 *.pyc
-*.pyo
-
-# Jupyter
 .ipynb_checkpoints/
 
-# Dataset
 data/
+dataset/
 datasets/
 UCF101/
+UCF-101/
 *.avi
 *.mp4
 *.webm
 
-# Generated frames
-*_FSAR/
-
-# Features / checkpoints
 features/
 feature_cache/
 checkpoints/
@@ -26,12 +19,10 @@ checkpoints/
 *.ckpt
 *.bin
 
-# Local environments
 .venv/
 venv/
 env/
 
-# IDE / OS
 .vscode/
 .idea/
 .DS_Store
