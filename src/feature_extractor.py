@@ -7,8 +7,8 @@ Output : one cache file per (backbone, sampling, split):
          containing 'features' (N, D) float16, 'video_ids', 'class_names', 'group_ids', 'labels' and 'settings'.
 Next   : few_shot.py / run_experiments.py read these files with load_split_features().
 
-Why a cache: running a video backbone on ~12,900 videos takes hours on Colab, while the few-shot
-experiments only need the resulting vectors. Features are computed once and reused by every experiment.
+Why a cache: running a video backbone on the complete 13,320-video dataset takes hours on Colab, while the
+few-shot experiments only need the resulting vectors. Features are computed once and reused by every experiment.
 
 No split / sampling / resizing code lives here: all of it comes from the frozen dataset pipeline.
 """

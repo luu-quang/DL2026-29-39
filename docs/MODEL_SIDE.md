@@ -22,6 +22,7 @@ Pipeline: `dataset_pipeline.py` (frozen, dataset team) → `feature_extractor.py
 ### few_shot.py
 - **Input:** features `(N, D)` + class name and group of each video.
 - **Main functions:** `FewShotDataset.sample_episode()` builds N-way K-shot episodes; support and query never share a video. With `group_safe=True`, queries come only from source groups not used by the support (`pick_group_safe()`). `group_safe=False` is now called **standard_random** (group overlap allowed). Also contains `ProtoHead` (Linear → L2 norm → class prototypes → cosine → learnable scale → logits), `evaluate_head()` (mean accuracy + 95 % CI), `learning_rate_at()` (TEAM schedule), `train_and_evaluate()` (no-train test → 2000 episodic SGD iterations → best on validation → test), and `audit_group_safety()`.
+- **Trainable parameters:** the pretrained backbones are frozen. Only ProtoHead's projection layer and learnable scale are trained.
 - **Output:** one result dict per experiment.
 - **Next:** `run_experiments.py`.
 
@@ -45,24 +46,32 @@ Result columns: `notrain_standard_random, notrain_group_safe, trained_standard_r
 
 seed 1234 · group-safe training/validation · 6 queries/class (train), 1 (test) · 2000 iterations · SGD lr 0.001, momentum 0.9, Nesterov, wd 5e-4 · LR × [1, 0.5, 0.1, 0.01] at epochs [0, 3, 5, 7], 200 it/epoch · validation every 100 it on 300 episodes (min(way, 10)-way) · 10 000 test episodes · way {5, 10, 20} · shot {1, 5} · train fraction {0.02, 0.1, 0.5, 1.0}.
 
-## How old results are reused safely
+## Legacy v3 cache compatibility
 
-1. Old cache files (from the v3 notebook) have no `settings`. For each backbone and sampling, 8 test videos are taken from the frozen dataset pipeline, their features are recomputed, and they are compared with the cached vectors. If every cosine similarity is ≥ 0.999 and the video counts match, the old files are stamped as `v3_notebook_verified` and reused. Otherwise they are renamed `<split>.legacy.pt` and regenerated.
-2. Old runs in `runs.jsonl` are reused only for features marked `v3_notebook_verified`. If a cache is regenerated, all experiments that use it are recomputed automatically.
-3. Stamped files keep their original row order. Episodes are therefore sampled exactly as in the original runs.
+The compatibility logic remains in the code for old v3 caches, but the canonical full-dataset run uses a fresh feature root.
+
+- The old local copy physically contained **12,902 / 13,320 UCF101 files**.
+- Only **12,900** of those files matched TEAM entries and were used in the v3 experiment.
+- The remaining 2 files had no TEAM entry and were never used.
+- Therefore the v3 feature caches contain **12,900 TEAM-matched rows**.
+- These IDs cannot match the complete **13,320-video** canonical split.
+- The final run therefore uses fresh caches under `UCF101_Features_full13320`.
+- v3 numbers are historical only and must not be mixed with final full-dataset results.
 
 ## Status report
 
 | Question | Answer |
 |---|---|
-| Smoke test passed? | **NO — not run yet.** It needs Colab (GPU, dataset, `dataset_pipeline.py`). It runs automatically as step 1 of `run_experiments.py`, and the answer is written to `handoff_report.json`. |
-| Existing caches reused? | **To be confirmed by the verification step.** Candidates: the 18 files `{videomae_v2, r2plus1d_18} × {uniform, random, consecutive} × {train, val, test}` from the v3 run. The CLIP caches are ignored. |
-| Any cache regenerated? | None so far. This happens only for a (backbone, sampling) whose verification fails. |
-| Any result changed? | No numbers changed. Only the column names were renamed. Numbers change only if a cache is regenerated, and then only the affected rows. |
+| Smoke test passed? | **YES.** End-to-end GPU smoke test passed on the complete official UCF101 dataset. TEAM matched train=9,154, val=1,421, test=2,745 with 0 missing. Dataset batch shape was `(4, 16, 3, 224, 224)` uint8; VideoMAE v2 produced `(4, 768)` and R(2+1)D-18 produced `(4, 512)`. Both successfully interfaced with ProtoHead. |
+| Existing v3 caches reused in the canonical full run? | **NO.** The full run uses the fresh `UCF101_Features_full13320` root. |
+| Full-dataset experiment? | **In progress.** The complete 13,320-video sweep is the canonical final run. |
+| Final result numbers? | **Not declared yet.** Only the completed full-dataset CSVs will be reported as final results. |
 
 ## Confirmed dataset integration
 
-- `feature_extractor.make_dataset()` is aligned to the actual frozen API: `build_class_mapping()`, `load_team_splits()`, and `UCF101ClipDataset`.
-- Items are dicts with `clip` (uint8, `(16, 3, 224, 224)`), `video_id`, `class_name`, `group_id` (int), `label`, `split`.
-- TEAM entries missing from the local UCF101 copy are skipped and counted. This preserves the original v3 behavior on the 12,900 matched videos and allows legacy caches to be verified instead of forcing a full regeneration.
-- New/stamped feature caches are reused only when their stored video IDs exactly match the current dataset row order.
+- Complete official UCF101: **13,320 videos, 101 classes**.
+- Fixed TEAM class-disjoint split: **train 9,154 / val 1,421 / test 2,745; 0 missing**.
+- `feature_extractor.make_dataset()` uses `build_class_mapping()`, `load_team_splits()`, and `UCF101ClipDataset`.
+- Dataset items contain `clip` uint8 `(16, 3, 224, 224)`, `video_id`, `class_name`, `group_id`, `label`, and `split`.
+- New feature caches are reused only when their ordered video IDs exactly match the current dataset.
+- Group-safe episodes require support and query source groups (`gXX`) to be disjoint within each class.
