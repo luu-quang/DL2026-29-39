@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Dataset
+data/
+datasets/
+UCF101/
+*.avi
+*.mp4
+*.webm
+
+# Generated frames
+*_FSAR/
+
+# Features / checkpoints
+features/
+feature_cache/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.bin
+
+# Local environments
+.venv/
+venv/
+env/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
