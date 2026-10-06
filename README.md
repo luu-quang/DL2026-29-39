@@ -227,6 +227,30 @@ results/
 
 These files are used to build the tables and figures in the final report.
 
+## Final results
+
+The complete experiment sweep was run on all 13,320 UCF101 videos using the fixed TEAM split.
+
+Main group-safe results with uniform sampling:
+
+| Setting | VideoMAE v2 | R(2+1)D-18 |
+| --- | ---: | ---: |
+| 5-way 1-shot | **99.46 ± 0.06%** | **92.61 ± 0.23%** |
+| 5-way 5-shot | **99.88 ± 0.03%** | **97.81 ± 0.13%** |
+| 10-way 1-shot | **99.20 ± 0.06%** | **88.15 ± 0.19%** |
+| 10-way 5-shot | **99.76 ± 0.03%** | **95.81 ± 0.12%** |
+| 20-way 1-shot | **98.80 ± 0.05%** | **82.96 ± 0.15%** |
+| 20-way 5-shot | **99.60 ± 0.03%** | **93.64 ± 0.10%** |
+
+Main findings:
+
+- VideoMAE v2 consistently outperforms R(2+1)D-18, especially as the number of classes increases.
+- VideoMAE v2 is highly robust to uniform, random, and consecutive frame sampling.
+- R(2+1)D-18 is more sensitive to consecutive sampling.
+- Increasing task-specific episodic training data from the minimum usable 2% condition to 100% gives little additional improvement.
+- The group-safe sampler produced 0 source-group overlaps in 2,000 audited class splits, while standard random sampling produced 15.8% overlap in the 5-shot audit.
+
+The complete tables and figures are stored in `results/`.
 ## Validation status
 
 The integrated pipeline has passed an end-to-end GPU smoke test on the complete UCF101 dataset.
@@ -245,7 +269,7 @@ UCF101 video
 
 The smoke test is only used to verify that the complete pipeline works. Its tiny example episode is not treated as an experimental accuracy result.
 
-Final performance numbers should come from the complete experiment run.
+The complete experiment run has finished. Final performance numbers are stored in `results/`.
 
 ## Reproducibility
 

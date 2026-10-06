@@ -1,0 +1,84 @@
+{
+  "smoke_test_passed": true,
+  "runs_reused": [
+    "videomae_v2/uniform/5w1s/frac1.0",
+    "videomae_v2/uniform/5w5s/frac1.0",
+    "r2plus1d_18/uniform/5w1s/frac1.0",
+    "r2plus1d_18/uniform/5w5s/frac1.0",
+    "videomae_v2/uniform/5w1s/frac1.0",
+    "videomae_v2/uniform/5w5s/frac1.0",
+    "r2plus1d_18/uniform/5w1s/frac1.0",
+    "r2plus1d_18/uniform/5w5s/frac1.0",
+    "videomae_v2/uniform/5w1s/frac1.0",
+    "r2plus1d_18/uniform/5w1s/frac1.0"
+  ],
+  "runs_computed": [
+    "videomae_v2/uniform/5w1s/frac1.0",
+    "videomae_v2/uniform/5w5s/frac1.0",
+    "r2plus1d_18/uniform/5w1s/frac1.0",
+    "r2plus1d_18/uniform/5w5s/frac1.0",
+    "videomae_v2/random/5w1s/frac1.0",
+    "videomae_v2/random/5w5s/frac1.0",
+    "videomae_v2/consecutive/5w1s/frac1.0",
+    "videomae_v2/consecutive/5w5s/frac1.0",
+    "r2plus1d_18/random/5w1s/frac1.0",
+    "r2plus1d_18/random/5w5s/frac1.0",
+    "r2plus1d_18/consecutive/5w1s/frac1.0",
+    "r2plus1d_18/consecutive/5w5s/frac1.0",
+    "videomae_v2/uniform/10w1s/frac1.0",
+    "videomae_v2/uniform/10w5s/frac1.0",
+    "videomae_v2/uniform/20w1s/frac1.0",
+    "videomae_v2/uniform/20w5s/frac1.0",
+    "r2plus1d_18/uniform/10w1s/frac1.0",
+    "r2plus1d_18/uniform/10w5s/frac1.0",
+    "r2plus1d_18/uniform/20w1s/frac1.0",
+    "r2plus1d_18/uniform/20w5s/frac1.0",
+    "videomae_v2/uniform/5w1s/frac0.02",
+    "videomae_v2/uniform/5w1s/frac0.1",
+    "videomae_v2/uniform/5w1s/frac0.5",
+    "r2plus1d_18/uniform/5w1s/frac0.02",
+    "r2plus1d_18/uniform/5w1s/frac0.1",
+    "r2plus1d_18/uniform/5w1s/frac0.5"
+  ],
+  "standard_random_overlap_percent": 15.8,
+  "dataset": {
+    "matched": {
+      "train": 9154,
+      "val": 1421,
+      "test": 2745
+    },
+    "missing": {
+      "train": 0,
+      "val": 0,
+      "test": 0
+    },
+    "total_matched": 13320,
+    "total_missing": 0
+  },
+  "cache": {
+    "reused": [
+      "videomae_v2/uniform/test",
+      "r2plus1d_18/uniform/test",
+      "videomae_v2/uniform/val",
+      "r2plus1d_18/uniform/val",
+      "videomae_v2/uniform/train",
+      "r2plus1d_18/uniform/train",
+      "videomae_v2/random/test",
+      "r2plus1d_18/random/test",
+      "videomae_v2/random/val",
+      "r2plus1d_18/random/val"
+    ],
+    "reused_after_verification": [],
+    "regenerated": [
+      "videomae_v2/random/train",
+      "r2plus1d_18/random/train",
+      "videomae_v2/consecutive/test",
+      "r2plus1d_18/consecutive/test",
+      "videomae_v2/consecutive/val",
+      "r2plus1d_18/consecutive/val",
+      "videomae_v2/consecutive/train",
+      "r2plus1d_18/consecutive/train"
+    ],
+    "verification": []
+  }
+}

@@ -161,6 +161,14 @@ shape = (16, 3, 224, 224)
 dtype = uint8
 ```
 
+### AVI decoding robustness
+
+A small number of UCF101 AVI files report frame positions that cannot actually be decoded.
+
+The loader normally reads the requested frame using direct random access. If this fails, the video is decoded sequentially. When a requested frame index is beyond the last decodable frame, the final readable frame is repeated.
+
+This fallback is deterministic and preserves the requested 16-frame clip length instead of dropping the video or stopping the experiment.
+
 Backbone-specific normalization is not performed inside the dataset loader.
 
 It is applied later in `src/backbones.py` because VideoMAE v2 and R(2+1)D-18 use different pretrained-model normalization settings.

@@ -64,8 +64,8 @@ The compatibility logic remains in the code for old v3 caches, but the canonical
 |---|---|
 | Smoke test passed? | **YES.** End-to-end GPU smoke test passed on the complete official UCF101 dataset. TEAM matched train=9,154, val=1,421, test=2,745 with 0 missing. Dataset batch shape was `(4, 16, 3, 224, 224)` uint8; VideoMAE v2 produced `(4, 768)` and R(2+1)D-18 produced `(4, 512)`. Both successfully interfaced with ProtoHead. |
 | Existing v3 caches reused in the canonical full run? | **NO.** The full run uses the fresh `UCF101_Features_full13320` root. |
-| Full-dataset experiment? | **In progress.** The complete 13,320-video sweep is the canonical final run. |
-| Final result numbers? | **Not declared yet.** Only the completed full-dataset CSVs will be reported as final results. |
+| Full-dataset experiment? | **COMPLETE.** The canonical sweep finished on all 13,320 videos and produced the final CSV files, figures, and `handoff_report.json`. |
+| Final result numbers? | **FINALIZED.** Reported results come only from the completed full-dataset CSVs in `results/`; old v3 results are historical only. |
 
 ## Confirmed dataset integration
 

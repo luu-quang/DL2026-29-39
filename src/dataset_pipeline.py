@@ -259,28 +259,80 @@ def resize_shorter_side_and_center_crop(
     return resized[top : top + crop_size, left : left + crop_size]
 
 
+def _decode_all_frames(video_path: Path):
+    """Sequentially decode every readable frame from a video."""
+    capture = cv2.VideoCapture(str(video_path))
+    if not capture.isOpened():
+        raise RuntimeError(f"Could not reopen video: {video_path}")
+
+    frames = []
+
+    while True:
+        success, frame = capture.read()
+        if not success:
+            break
+        frames.append(frame)
+
+    capture.release()
+
+    if not frames:
+        raise RuntimeError(f"No decodable frames in video: {video_path}")
+
+    return frames
+
+
 def read_and_preprocess_clip(video_path: Path, frame_indices):
-    """Read selected RGB frames and return uint8 tensor (T, C, 224, 224)."""
+    """Read selected RGB frames and return uint8 tensor (T, C, 224, 224).
+
+    Random seeking is used normally. If an AVI cannot decode one of the
+    requested positions, the video is decoded sequentially. Requested
+    indices beyond the last decodable frame use the final readable frame.
+    """
+    frame_indices = [int(index) for index in frame_indices]
+
     capture = cv2.VideoCapture(str(video_path))
     if not capture.isOpened():
         raise RuntimeError(f"Could not open video: {video_path}")
 
-    processed_frames = []
-    for frame_index in frame_indices:
-        capture.set(cv2.CAP_PROP_POS_FRAMES, int(frame_index))
-        success, frame = capture.read()
-        if not success:
-            capture.release()
-            raise RuntimeError(
-                f"Could not read frame {frame_index} from {video_path}"
-            )
+    raw_frames = []
+    seek_failed = False
 
+    for frame_index in frame_indices:
+        capture.set(cv2.CAP_PROP_POS_FRAMES, frame_index)
+        success, frame = capture.read()
+
+        if not success:
+            seek_failed = True
+            break
+
+        raw_frames.append(frame)
+
+    capture.release()
+
+    if seek_failed:
+        decoded_frames = _decode_all_frames(video_path)
+        last_index = len(decoded_frames) - 1
+
+        print(
+            f"[video] seek/decode mismatch for {video_path.name}: "
+            f"requested_max={max(frame_indices)}, "
+            f"decodable_frames={len(decoded_frames)}; "
+            "using sequential decode and repeating the last readable frame "
+            "for out-of-range indices"
+        )
+
+        raw_frames = [
+            decoded_frames[min(max(frame_index, 0), last_index)]
+            for frame_index in frame_indices
+        ]
+
+    processed_frames = []
+
+    for frame in raw_frames:
         # OpenCV is BGR; pretrained vision backbones expect RGB input.
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = resize_shorter_side_and_center_crop(frame)
         processed_frames.append(frame)
-
-    capture.release()
 
     clip = torch.from_numpy(np.stack(processed_frames))
     # Dataset returns time-first, channel-first frames: (T,H,W,C) -> (T,C,H,W).
