@@ -1,0 +1,10 @@
+torch
+torchvision
+transformers<5
+timm
+easydict
+opencv-python-headless
+numpy
+pandas
+matplotlib
+tqdm
